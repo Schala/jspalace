@@ -87,12 +87,25 @@ export const MSG =
 	XWHISPER: 0x78776973
 }
 
+/** Encodes as a UTF-8 null terminated string */
+String.prototype.toC = function()
+{
+	let enc = new TextEncoder();
+	let utf8 = enc.encode(this);
+	let result = new Uint8Array(utf8.length + 1);
+
+	result.set(utf8, 0);
+	result[result.length - 1] = 0;
+	
+	return result;
+}
+
 /** Encodes as a UTF-8 Pascal string */
 String.prototype.toPascal = function()
 {
 	let enc = new TextEncoder();
 	let utf8 = enc.encode(this);
-	let len = utf8.byteLength > 255 ? 255 : utf8.byteLength;
+	let len = utf8.length > 255 ? 255 : utf8.length;
 	let result = new Uint8Array(len + 1);
 
 	result[0] = len;
@@ -106,7 +119,7 @@ String.prototype.toStr31 = function()
 {
 	let enc = new TextEncoder();
 	let utf8 = enc.encode(this);
-	let len = utf8.byteLength > 31 ? 31 : utf8.byteLength;
+	let len = utf8.length > 31 ? 31 : utf8.length;
 	let result = new Uint8Array(len + 1);
 
 	result[0] = len;
@@ -120,7 +133,7 @@ String.prototype.toStr63 = function()
 {
 	let enc = new TextEncoder();
 	let utf8 = enc.encode(this);
-	let len = utf8.byteLength > 63 ? 63 : utf8.byteLength;
+	let len = utf8.length > 63 ? 63 : utf8.length;
 	let result = new Uint8Array(len + 1);
 
 	result[0] = len;
