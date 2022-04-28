@@ -58,6 +58,20 @@ class Lexer
 		return this._tokens;
 	}
 
+	/** True if the current character is alphabetic */
+	_isAlpha()
+	{
+		let code = this._chr.charCodeAt(0);
+		return (code >= 65 && code <= 90) || // >= 'A and <= 'Z'
+			(code >= 97 && code <= 122); // >= 'a' and <= 'z'
+	}
+
+	/** True if the current character is alphanumeric */
+	_isAlphanumeric()
+	{
+		return this._isAlpha() || this._isDigit();
+	}
+
 	/** True if the current character is a numerical digit */
 	_isDigit()
 	{
@@ -85,6 +99,24 @@ class Lexer
 		{
 			case '\t':
 			case ' ':
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/** True if the current character is a reserved symbol */
+	_isSpecial()
+	{
+		switch (this._chr)
+		{
+			case '&': // concatenation
+			case '*': // multiplication
+			case '-': // subtraction
+			case '=': // assignment, equality
+			case '+': // addition
+			case '<': // less than
+			case '>': // greater than
 				return true;
 			default:
 				return false;
@@ -146,18 +178,7 @@ class Lexer
 		// array
 		if (this._chr == '[')
 		{
-			var array = [];
-			while (this._nextChar() != ']')
-			{
-				// integer
-				if (this._isDigit())
-					array.push(this._parseInteger());
-			
-				// string
-				if (this._chr == '"')
-					array.push(this._parseString());
-			}
-			this._tokens.push(array, TokenType.Array);
+			this._tokens.push(new Token(this._parseArray(), TokenType.Array));
 			return this._last();
 		}
 
@@ -183,6 +204,48 @@ class Lexer
 			this._tokens.push(new Token((new Lexer(code)).tokens, TokenType.Atom));
 			return this._last();
 		}
+
+		// identifier
+		if (this._isAlpha() || this._chr == '_')
+			this._tokens.push(new Token(this._parseIdentifier(), TokenType.Identifier));
+	}
+
+	_parseArray()
+	{
+		var array = [];
+		while (this._nextChar() != ']')
+		{
+			// nested array
+			if (this._chr == '[')
+				array.push(new Token(this._parseArray(), TokenType.Array));
+
+			// identifier
+			if (this._isAlpha() || this._chr == '_')
+				array.push(new Token(this._parseIdentifier(), TokenType.Identifier));
+
+			// integer
+			if (this._isDigit())
+				array.push(new Token(this._parseInteger(), TokenType.Integer));
+
+			// operator
+			if (this._isSpecial())
+				array.push(new Token(this._parseOperator(), TokenType.Operator));
+		
+			// string
+			if (this._chr == '"')
+				array.push(new Token(this._parseString(), TokenType.String));
+		}
+
+		return array;
+	}
+
+	_parseIdentifier()
+	{
+		var id = this._chr;
+		this._nextChar();
+		while (this._isAlphanumeric() || this._chr === '_')
+			id += this._chr;
+		return id;
 	}
 
 	_parseInteger()
@@ -191,6 +254,15 @@ class Lexer
 		while (this._isDigit(this._nextChar()))
 			num += this._chr;
 		return parseInt(num, 10);
+	}
+
+	_parseOperator()
+	{
+		var op = this._chr;
+		this._nextChar();
+		if (this._isSpecial())
+			op += this._chr;
+		return op;
 	}
 
 	_parseString()

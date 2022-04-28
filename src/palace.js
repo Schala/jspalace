@@ -87,6 +87,271 @@ export const MSG =
 	XWHISPER: 0x78776973
 }
 
+/** Draw command constants */
+export const DC =
+{
+	Path: 0,
+	Shape: 1,
+	Text: 2,
+	Detonate: 3,
+	Delete: 4,
+	Ellipse: 5
+}
+
+/** Server info flags and codes */
+export const SI =
+{
+	AVATAR_URL: 1,
+	SERVER_VERSION: 2,
+	SERVER_TYPE: 4,
+	SERVER_FLAGS: 8,
+	NUM_USERS: 16,
+	SERVER_NAME: 32,
+	HTTP_URL: 64,
+	INF_AURL: 0x4155524C,
+	ERR_AUTH: 0x41555448,
+	INF_FLAG: 0x464C4147,
+	INF_HURL: 0x4855524C,
+	EXT_NAME: 0x4E414D45,
+	INF_NAME: 0x4E414D45,
+	INF_NUM_USERS: 0x4E555352,
+	EXT_PASS: 0x50415353,
+	EXT_TYPE: 0x54595045,
+	INF_TYPE: 0x54595045,
+	ERR_UNKN: 0x554E4B4E,
+	INF_VERS: 0x56455253
+}
+
+/** Server configuration flags */
+export const FF =
+{
+	DirectPlay: 1, // obsolete, no longer used
+	ClosedServer: 2,
+	GuestsAreMembers: 4, // obsolete, always set
+	InstantPalace: 16, // obsolete, no longer used
+	PalacePresents: 32 // obsolete, no longer used
+}
+
+/** Platform constants */
+export const PLAT =
+{
+	Macintosh: 0,
+	Windows95: 1, // obsolete, no longer used
+	WindowsNT: 2,
+	Unix: 3
+}
+
+/** Room flags */
+export const RF =
+{
+	AuthorLocked: 1,
+	Private: 2,
+	NoPainting: 4,
+	Closed: 8,
+	CyborgFreeZone: 16,
+	Hidden: 32,
+	NoGuests: 64, // obsolete, no longer used, ignored
+	WizardsOnly: 128,
+	DropZone: 256,
+	NoLooseProps: 512
+}
+
+/** User flags */
+export const U =
+{
+	SuperUser: 1,
+	God: 2,
+	Kill: 4,
+	Guest: 8, // obsolete, no longer used, ignored
+	Banished: 16, // redundant, don't use, ignored
+	Penalized: 32, // unused
+	CommError: 64,
+	Gag: 128,
+	Pin: 256,
+	Hide: 512,
+	RejectESP: 1024,
+	RejectPrivate: 2048,
+	PropGag: 4096
+}
+
+/** Login auxillary flags */
+export const LI_AUXFLAGS =
+{
+	UnknownMach: 0,
+	Mac68k: 1, // obsolete, ignored
+	MacPPC: 2, // obsolete, ignored
+	Win16: 3, // obsolete, ignored
+	Win32: 4,
+	Java: 5,
+	OSMask: 15,
+	Authenticate: 0x80000000
+}
+
+/** Upload capabilities */
+export const LI_ULCAPS =
+{
+	ASSETS_PALACE: 1,
+	ASSETS_FTP: 2,
+	ASSETS_HTTP: 4,
+	ASSETS_OTHER: 8,
+	FILES_PALACE: 16,
+	FILES_FTP: 32,
+	FILES_HTTP: 64,
+	FILES_OTHER: 128,
+	EXTEND_PKT: 256
+}
+
+/** Download capabilities */
+export const LI_DLCAPS =
+{
+	ASSETS_PALACE: 1,
+	ASSETS_FTP: 2,
+	ASSETS_HTTP: 4,
+	ASSETS_OTHER: 8,
+	FILES_PALACE: 16,
+	FILES_FTP: 32,
+	FILES_HTTP: 64,
+	FILES_OTHER: 128,
+	FILES_HTTPSrvr: 256,
+	EXTEND_PKT: 512
+}
+
+/** 2D engine capabilities */
+export const LI_2DENGINECAP =
+{
+	PALACE: 1,
+	DOUBLEBYTE: 2
+}
+
+/** 2D graphics capabilities */
+export const LI_2DGRAPHCAP =
+{
+	GIF87: 1,
+	GIF89a: 2,
+	JPG: 4,
+	TIFF: 8,
+	TARGA: 16,
+	BMP: 32,
+	PCT: 64
+}
+
+/** 3D engine capabilities */
+export const LI_3DENGINECAP =
+{
+	VRML1: 1,
+	VRML2: 2
+}
+
+/** Server error constants */
+export const SE =
+{
+	InternalError: 0,
+	RoomUnknown: 1,
+	RoomFull: 2,
+	RoomClosed: 3,
+	CantAuthor: 4,
+	PalaceFull: 5
+}
+
+/** Script event flags */
+export const PE =
+{
+	Select: 1,
+	Lock: 1 << 1,
+	Unlock: 1 << 2,
+	Hide: 1 << 3,
+	Show: 1 << 4,
+	Startup: 1 << 5,
+	Alarm: 1 << 6,
+	Custom: 1 << 7,
+	InChat: 1 << 8,
+	PropChange: 1 << 9,
+	Enter: 1 << 10,
+	Leave: 1 << 11,
+	OutChat: 1 << 12,
+	SignOn: 1 << 13,
+	SignOff: 1 << 14,
+	Macro0: 1 << 15,
+	Macro1: 1 << 16,
+	Macro2: 1 << 17,
+	Macro3: 1 << 18,
+	Macro4: 1 << 19,
+	Macro5: 1 << 20,
+	Macro6: 1 << 21,
+	Macro7: 1 << 22,
+	Macro8: 1 << 23,
+	Macro9: 1 << 24,
+}
+
+/** Spot type/state */
+export const HS =
+{
+	Normal: 0,
+	Unlock: 0,
+	Door: 1,
+	Lock: 1,
+	ShutableDoor: 2,
+	LockableDoor: 3,
+	Bolt: 4,
+	NavArea: 5
+}
+
+/** Connection error constants */
+export const K =
+{
+	Unknown: 0,
+	LoggedOff: 1,
+	CommError: 2,
+	Flood: 3,
+	KilledByPlayer: 4,
+	ServerDown: 5,
+	Unresponsive: 6,
+	KilledBySysop: 7,
+	ServerFull: 8,
+	InvalidSerialNumber: 9, // obsolete, no longer used
+	DuplicateUser: 10,
+	DeathPenaltyActive: 11,
+	Banished: 12,
+	BanishKill: 13,
+	NoGuests: 14, // obsolete, no longer used
+	DemoExpired: 15, // obsolete, no longer used
+	Verbose: 16
+}
+
+/** Server permission flags */
+export const PM =
+{
+	AllowGuests: 1, // obsolete, always set
+	AllowCyborgs: 2,
+	AllowPainting: 4,
+	AllowCustomProps: 8,
+	AllowWizards: 16,
+	WizardsMayKill: 32,
+	WizardsMayAuthor: 64,
+	PlayersMayKill: 128,
+	CyborgsMayKill: 256,
+	DeathPenalty: 512,
+	PurgeInactiveProps: 1024,
+	KillFlooders: 2048,
+	NoSpoofing: 4096,
+	MemberCreatedRooms: 8192
+}
+
+/** Server option flags */
+export const SO =
+{
+	SaveSessionKeys: 1, // obsolete, no longer used
+	PasswordSecurity: 2,
+	ChatLog: 4,
+	NoWhisper: 8,
+	AllowDemoMembers: 16, // obsolete, no longer used
+	Authenticate: 32,
+	PoundProtect: 64,
+	SortOptions: 128,
+	AuthTrackLogoff: 256,
+	JavaSecure: 512 // obsolete, no longer used
+}
+
 /** Encodes as a UTF-8 null terminated string */
 String.prototype.toC = function()
 {
@@ -265,6 +530,7 @@ export class AssetDescriptor
 	}
 }
 
+exports.String.prototype.toC = String.prototype.toC;
 exports.String.prototype.toPascal = String.prototype.toPascal;
 exports.String.prototype.toStr31 = String.prototype.toStr31;
 exports.String.prototype.toStr63 = String.prototype.toStr63;
