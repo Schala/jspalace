@@ -34,11 +34,13 @@ class Lexer
 	/**
 	 * Loads a file into the lexer
 	 * @constructor
+	 * @param {Interpreter} interpretor - Interpreter instance
 	 * @param {string} code - Script code
 	*/
-	constructor(code)
+	constructor(interpretor, code)
 	{
 		this._code = code;
+		this._interp = interpretor;
 		this._linePos = 0;
 		this._line = 1;
 		this._chr = null;
@@ -368,22 +370,31 @@ export class Interpreter
 	*/
 	constructor(code)
 	{
-		this._code = code;
-
 		// Variable map
 		this._vars = new Map();
 
 		// operation stack
-		this._stack = [];
+		this._stack = new Lexer(code).tokens;
+
+		this._reset();
 	}
 
 	/**
-	 * Evaluate a stack entry
+	 * Evaluate an expression on the stack.
 	 * @param {boolean} run - Execute the popped code
 	*/
-	_eval(run = true)
+	eval(run = true)
 	{
-		var val = this._stack.pop();
+		var elem = this._stack.pop();
+	}
+
+	_reset()
+	{
+		// stack pointer
+		this._ptr = this._stack.length - 1;
+
+		// in case we have nested expressions, this keeps count
+		this._depth = 0;
 	}
 
 	// --- operations ---
@@ -397,7 +408,7 @@ export class Interpreter
 		var vals = [];
 
 		while (this._stack.length > 0)
-			vals.push(this._eval());
+			vals.push(this.eval());
 		
 		for (let v of vals)
 			this._stack.push(v);
@@ -406,7 +417,7 @@ export class Interpreter
 	_assign()
 	{
 		var id = this._stack.pop();
-		var rhs = this._eval();
+		var rhs = this.eval();
 		this._vars[id] = rhs;
 	}
 
@@ -420,8 +431,8 @@ export class Interpreter
 
 	_concat()
 	{
-		var rhs = this._eval();
-		var lhs = this._eval();
+		var rhs = this.eval();
+		var lhs = this.eval();
 		this._stack.push(lhs.concat(rhs));
 	}
 
@@ -432,24 +443,24 @@ export class Interpreter
 
 	_donprop()
 	{
-		var prop = this._eval();
+		var prop = this.eval();
 	}
 
 	_dooridx()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_dropprop()
 	{
-		var y = this._eval();
-		var x = this._eval();
+		var y = this.eval();
+		var x = this.eval();
 	}
 
 	_equal()
 	{
-		var rhs = this._eval();
-		var lhs = this._eval();
+		var rhs = this.eval();
+		var lhs = this.eval();
 		this._stack.push(lhs == rhs ? 1 : 0);
 	}
 
@@ -459,7 +470,7 @@ export class Interpreter
 
 	_getspotstate()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_global()
@@ -469,52 +480,52 @@ export class Interpreter
 
 	_globalmsg()
 	{
-		var msg = this._eval();
+		var msg = this.eval();
 	}
 
 	_gotoroom()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_gotourlframe()
 	{
-		var frame = this._eval();
-		var url = this._eval();
+		var frame = this.eval();
+		var url = this.eval();
 	}
 
 	_grepstr()
 	{
-		var pattern = this._eval();
-		var input = this._eval();
+		var pattern = this.eval();
+		var input = this.eval();
 	}
 
 	_grepsub()
 	{
-		var pattern = this._eval();
-		var input = this._eval();
+		var pattern = this.eval();
+		var input = this.eval();
 	}
 
 	_hasprop()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_if()
 	{
-		if (this._eval())
+		if (this.eval())
 			;
 	}
 
 	_ifelse()
 	{
-		if (this._eval())
+		if (this.eval())
 			;
 	}
 
 	_inspot()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_isgod()
@@ -527,7 +538,7 @@ export class Interpreter
 
 	_islocked()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_iswizard()
@@ -536,32 +547,32 @@ export class Interpreter
 
 	_itoa()
 	{
-		this._stack.push(this._eval().toString());
+		this._stack.push(this.eval().toString());
 	}
 
 	_killuser()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_localmsg()
 	{
-		var msg = this._eval();
+		var msg = this.eval();
 	}
 
 	_lock()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_logmsg()
 	{
-		var msg = this._eval();
+		var msg = this.eval();
 	}
 
 	_macro()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_me()
@@ -570,15 +581,15 @@ export class Interpreter
 
 	_minus()
 	{
-		var lhs = this._eval();
-		var rhs = this._eval();
+		var lhs = this.eval();
+		var rhs = this.eval();
 		this._stack.push(lhs - rhs);
 	}
 
 	_move()
 	{
-		var y = this._eval();
-		var x = this._eval();
+		var y = this.eval();
+		var x = this.eval();
 	}
 
 	_nbrdoors()
@@ -599,13 +610,13 @@ export class Interpreter
 
 	_netgoto()
 	{
-		var url = this._eval();
+		var url = this.eval();
 	}
 
 	_plus()
 	{
-		var lhs = this._eval();
-		var rhs = this._eval();
+		var lhs = this.eval();
+		var rhs = this.eval();
 		this._stack.push(lhs + rhs);
 	}
 
@@ -619,8 +630,8 @@ export class Interpreter
 
 	_privatemsg()
 	{
-		var target = this._eval();
-		var msg = this._eval();
+		var target = this.eval();
+		var msg = this.eval();
 	}
 
 	_put()
@@ -629,71 +640,71 @@ export class Interpreter
 
 	_random()
 	{
-		var max = this._eval();
+		var max = this.eval();
 		this._stack.push(Math.round(Math.random() * max));
 	}
 
 	_roommsg()
 	{
-		var msg = this._eval();
+		var msg = this.eval();
 	}
 
 	_roomuser()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_say()
 	{
-		var text = this._eval();
+		var text = this.eval();
 	}
 
 	_sayat()
 	{
-		var y = this._eval();
-		var x = this._eval();
-		var text = this._eval();
+		var y = this.eval();
+		var x = this.eval();
+		var text = this.eval();
 	}
 
 	_select()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_setalarm()
 	{
-		var target = this._eval();
-		var value = this._eval();
+		var target = this.eval();
+		var value = this.eval();
 	}
 
 	_setcolor()
 	{
-		var color = this._eval();
+		var color = this.eval();
 	}
 
 	_setface()
 	{
-		var face = this._eval();
+		var face = this.eval();
 	}
 
 	_setloc()
 	{
-		var id = this._eval();
-		var y = this._eval();
-		var x = this._eval();
+		var id = this.eval();
+		var y = this.eval();
+		var x = this.eval();
 	}
 
 	_setpicloc()
 	{
-		var id = this._eval();
-		var y = this._eval();
-		var x = this._eval();
+		var id = this.eval();
+		var y = this.eval();
+		var x = this.eval();
 	}
 
 	_setpos()
 	{
-		var y = this._eval();
-		var x = this._eval();
+		var y = this.eval();
+		var x = this.eval();
 	}
 
 	_setprops()
@@ -701,19 +712,19 @@ export class Interpreter
 		var props = [];
 
 		while (this._stack.length > 0)
-			props.push(this._eval());
+			props.push(this.eval());
 	}
 
 	_setspotstate()
 	{
-		var id = this._eval();
-		var state = this._eval();
+		var id = this.eval();
+		var state = this.eval();
 	}
 
 	_setspotstatelocal()
 	{
-		var id = this._eval();
-		var state = this._eval();
+		var id = this.eval();
+		var state = this.eval();
 	}
 
 	_showlooseprops()
@@ -722,33 +733,33 @@ export class Interpreter
 
 	_sound()
 	{
-		var sound = this._eval();
+		var sound = this.eval();
 	}
 
 	_spotdest()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_spotidx()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_spotname()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_susrmsg()
 	{
-		var msg = this._eval();
+		var msg = this.eval();
 	}
 
 	_times()
 	{
-		var lhs = this._eval();
-		var rhs = this._eval();
+		var lhs = this.eval();
+		var rhs = this.eval();
 		this._stack.push(lhs * rhs);
 	}
 
@@ -758,7 +769,7 @@ export class Interpreter
 
 	_unlock()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_username()
@@ -767,13 +778,13 @@ export class Interpreter
 
 	_userprop()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_while()
 	{
-		var cond = this._eval();
-		var atom = this._eval(false);
+		var cond = this.eval();
+		var atom = this.eval(false);
 	}
 
 	_whochat()
@@ -786,7 +797,7 @@ export class Interpreter
 
 	_whoname()
 	{
-		var id = this._eval();
+		var id = this.eval();
 	}
 
 	_whopos()

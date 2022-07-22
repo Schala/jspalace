@@ -184,7 +184,7 @@ export const LI_AUXFLAGS =
 	Win32: 4,
 	Java: 5,
 	OSMask: 15,
-	Authenticate: 0x80000000
+	Authenticate: 2147483648
 }
 
 /** Upload capabilities */
@@ -365,13 +365,22 @@ String.prototype.toC = function()
 	return result;
 }
 
-/** Encodes as a UTF-8 Pascal string */
-String.prototype.toPascal = function()
+/**
+ * Encodes as a UTF-8 Pascal string
+ * @param {boolean} padded - If true, pad the remaining length with null characters
+ * @param {number} length - The fixed length of the string
+ */
+String.prototype.toPascal = function(padded = false, length = 255)
 {
+	// truncate to length if needed
+	if (this.length > length)
+		this = this.substring(0, length);
+		
 	let enc = new TextEncoder();
 	let utf8 = enc.encode(this);
-	let len = utf8.length > 255 ? 255 : utf8.length;
-	let result = new Uint8Array(len + 1);
+	let len = utf8.length > length ? length : utf8.length;
+
+	let result = new Uint8Array(padded ? length + 1 : len + 1);
 
 	result[0] = len;
 	result.set(utf8, 1);
@@ -382,49 +391,36 @@ String.prototype.toPascal = function()
 /** Encodes as UTF-8 and truncates string length to 31 bytes */
 String.prototype.toStr31 = function()
 {
-	let enc = new TextEncoder();
-	let utf8 = enc.encode(this);
-	let len = utf8.length > 31 ? 31 : utf8.length;
-	let result = new Uint8Array(len + 1);
-
-	result[0] = len;
-	result.set(utf8, 1);
-
-	return result;
+	return this.toPascal(true, 31);
 }
 
 /** Encodes as UTF-8 and truncates string length to 63 bytes */
 String.prototype.toStr63 = function()
 {
-	let enc = new TextEncoder();
-	let utf8 = enc.encode(this);
-	let len = utf8.length > 63 ? 63 : utf8.length;
-	let result = new Uint8Array(len + 1);
-
-	result[0] = len;
-	result.set(utf8, 1);
-
-	return result;
+	return this.toPascal(true, 63);
 }
 
 /** Message codec */
 export class Codec
 {
-	constructor()
+	/**
+	 * Builds a look-up table based on a seed value
+	 * @constructor
+	*/
+	constructor(seed = 666666)
 	{
 		this._lut = [];
-		var key = 666666;
-		var quo = 0;
-		var rem = 0;
-		var test = 0;
+		let quo = 0;
+		let rem = 0;
+		let test = 0;
 
 		for (let i = 0; i < 512; i++)
 		{
-			quo = key / 127773;
-			rem = key % 127773;
+			quo = seed / 127773;
+			rem = seed % 127773;
 			test = 16807 * rem - 2836 * quo;
-			key = test > 0 ? test : test + 0x80000000;
-			this._lut.push(Math.floor(key / 2147483647 * 256));
+			seed = test > 0 ? test : test + 2147483648;
+			this._lut.push(Math.floor(seed / 2147483647 * 256));
 		}
 	}
 
@@ -434,18 +430,18 @@ export class Codec
 	*/
 	encode(data)
 	{
-		var last = 0;
-		var rc = 0;
-		var b = 0;
+		let last = 0;
+		let rc = 0;
+		let byt = 0;
 
 		if (data.byteLength > 254)
 			data = data.subarray(0, 253);
 		
-		for (let i = 0; i < data.byteLength; i++)
+		for (let b of data)
 		{
-			b = i;
-			data[i] = (b ^ this._lut[rc++] ^ last) & 255;
-			last = (data[i] & this._lut[rc++]) & 255;
+			byt = b;
+			b = (b ^ this._lut[rc++] ^ last) & 255;
+			last = (b & this._lut[rc++]) & 255;
 		}
 
 		return data;
@@ -457,15 +453,15 @@ export class Codec
 	*/
 	decode(data)
 	{
-		var last = 0;
-		var rc = 0;
-		var b = 0;
+		let last = 0;
+		let rc = 0;
+		let byt = 0;
 		
-		for (let i = 0; i < data.byteLength; i++)
+		for (let b of data)
 		{
-			b = i;
-			data[i] = (b ^ this._lut[rc++] ^ last) & 255;
-			last = (b & this._lut[rc++]) & 255;
+			byt = b;
+			b = (byt ^ this._lut[rc++] ^ last) & 255;
+			last = (byt & this._lut[rc++]) & 255;
 		}
 
 		return data;
@@ -478,16 +474,15 @@ export class AssetSpec
 	/**
 	 * @constructor
 	 * @param {number} id - Asset ID
-	 * @param {ArrayBuffer} data - Asset binary data
+	 * @param {Uint8Array} data - Asset binary data
 	*/
 	constructor(id, data)
 	{
 		this.id = id;
-		this._crc = 0xD9216290;
+		this._crc = 3642843792;
 
-		let bytes = new DataView(data);
-		for (let i = 0; i < bytes.byteLength; i++)
-			this._crc = ((this._crc << 1) | ((this._crc & 0x80000000) ? 1 : 0)) ^ bytes.getUint8(i);
+		for (let b of data)
+			this._crc = ((this._crc << 1) | ((this._crc & 2147483648) ? 1 : 0)) ^ b;
 	}
 
 	/** Returns the CRC generated from the data */
@@ -530,7 +525,10 @@ export class AssetDescriptor
 	}
 }
 
-exports.String.prototype.toC = String.prototype.toC;
-exports.String.prototype.toPascal = String.prototype.toPascal;
-exports.String.prototype.toStr31 = String.prototype.toStr31;
-exports.String.prototype.toStr63 = String.prototype.toStr63;
+exports.String.prototype =
+{
+	toC: String.prototype.toC,
+	toPascal: String.prototype.toPascal,
+	toStr31: String.prototype.toStr31,
+	toStr63: String.prototype.toStr63
+}
